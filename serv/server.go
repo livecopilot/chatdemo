@@ -54,7 +54,7 @@ func (s *Server) Start() error {
 		log.Info("Request received")
 	})
 
-	log.Info("Starting server")
+	log.Info("Starting server.")
 
 	return http.ListenAndServe(s.address, mux)
 }
