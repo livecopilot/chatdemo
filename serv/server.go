@@ -93,10 +93,8 @@ func (s *Server) Start() error {
 
 			log.Infof("connection of %s closed", user)
 
-
 		}(user, conn)
 
-	
 	})
 
 	log.Info("Starting server.")
@@ -135,12 +133,11 @@ func (s *Server) delUser(user string) {
 	delete(s.users, user)
 }
 
-
 // readloop
 func (s *Server) readloop(user string, conn net.Conn) error {
 	for {
 		_ = conn.SetReadDeadline(time.Now().Add(s.options.readwait))
-        
+
 		frame, err := ws.ReadFrame(conn)
 
 		if err != nil {
@@ -151,22 +148,20 @@ func (s *Server) readloop(user string, conn net.Conn) error {
 
 			_ = wsutil.WriteServerMessage(conn, ws.OpPong, nil)
 			logrus.Info("Pong sent")
-			
+
 			continue
 		}
 
 		if frame.Header.OpCode == ws.OpClose {
 
-			return errors.New("Connection closed")	
+			return errors.New("Connection closed")
 		}
 
 		logrus.Info(frame.Header)
 
-
 		if frame.Header.Masked {
 			ws.Cipher(frame.Payload, frame.Header.Mask, 0)
 		}
-
 
 		if frame.Header.OpCode == ws.OpText {
 
@@ -176,14 +171,9 @@ func (s *Server) readloop(user string, conn net.Conn) error {
 
 		}
 
-
-
-
 	}
 
-	
 }
-
 
 // handle
 func (s *Server) handle(user string, message string) {
@@ -221,25 +211,23 @@ func (s *Server) writeText(conn net.Conn, message string) error {
 
 }
 
-
 const (
 	CommandPing = 100
 	CommandPong = 101
 )
 
-
 // handleBinary
 func (s *Server) handleBinary(user string, message []byte) {
-	logrus.Infof("recv binary message %s from %s", message, user)
+	logrus.Infof("recv binary message %v from %s", message, user)
 
 	s.Lock()
 	defer s.Unlock()
 
 	i := 0
-	command := binary.BigEndian.Uint16(message[i: i+2])
+	command := binary.BigEndian.Uint16(message[i : i+2])
 	i += 2
-	playloadLen := binary.BigEndian.Uint32(message[i: i+4])
-    logrus.Infof("command: %d, playloadLen: %d", command, playloadLen)
+	playloadLen := binary.BigEndian.Uint32(message[i : i+4])
+	logrus.Infof("command: %d, playloadLen: %d", command, playloadLen)
 
 	if command == CommandPing {
 		u := s.users[user]
@@ -252,4 +240,3 @@ func (s *Server) handleBinary(user string, message []byte) {
 	}
 
 }
-
